@@ -53,6 +53,7 @@ export class MarkovModel {
    * @param {number} options.temperature - Controls randomness (0 = deterministic, 1 = random)
    * @param {number} options.stopProbability - Probability of stopping at a stop token
    * @param {string} options.seed - Optional seed text to start generation
+   * @param {number} options.multipleSentenceProbability - Probability to continue after a stop token (0-1)
    * @returns {string} Generated text
    */
   generate(options = {}) {
@@ -60,10 +61,17 @@ export class MarkovModel {
       maxLength = 100,
       temperature = 0.8,
       stopProbability = 0.7,
-      seed = null
+      seed = null,
+      multipleSentenceProbability = 0
     } = options;
     
+    // Validate multipleSentenceProbability
+    if (multipleSentenceProbability < 0 || multipleSentenceProbability >= 1) {
+      throw new Error('multipleSentenceProbability must be between 0 and 1');
+    }
+    
     let tokens = [];
+    let currentLength = 0;
     
     // Initialize with seed or random context
     if (seed) {
@@ -71,14 +79,16 @@ export class MarkovModel {
       if (tokens.length < this.order) {
         throw new Error('Seed text must be at least as long as the model order');
       }
+      currentLength = tokens.length;
     } else {
       // Get random context from model
       const contexts = Array.from(this.model.keys());
       const randomContext = contexts[Math.floor(Math.random() * contexts.length)];
       tokens = randomContext.split(' ');
+      currentLength = tokens.length;
     }
     
-    while (tokens.length < maxLength) {
+    while (currentLength < maxLength) {
       const context = tokens.slice(-this.order).join(' ');
       
       if (!this.model.has(context)) {
@@ -89,10 +99,21 @@ export class MarkovModel {
       const nextToken = this._selectNextToken(nextTokens, temperature);
       
       tokens.push(nextToken);
+      currentLength++;
       
       // Check for stop token
-      if (this.stopTokens.has(nextToken) && Math.random() < stopProbability) {
-        break;
+      if (this.stopTokens.has(nextToken)) {
+        // First check if we should stop at this sentence
+        if (Math.random() < stopProbability) {
+          // Then check if we should continue with a new sentence
+          if (multipleSentenceProbability > 0 && Math.random() < multipleSentenceProbability) {
+            // Add a space after the stop token
+            tokens.push(' ');
+            currentLength++;
+            continue;
+          }
+          break;
+        }
       }
     }
     

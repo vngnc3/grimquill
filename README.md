@@ -1,5 +1,7 @@
 # Grimquill 🔮✍️🤖🧠
 
+![Grimquill Logo](https://cemt2c0dp6.ufs.sh/f/wDtlfMZnQe0tIna4Mg89esT6KmxEWZvqhG4MayrcQgpXdJIU)
+
 Configurable Higher-Order Markov Text Generator.
 
 ## What does Grimquill do?
@@ -8,11 +10,12 @@ Configurable Higher-Order Markov Text Generator.
 - 🚅 Support parallel processing for faster training
 - 📝 Handle both word and character-level tokenization
 - 🎯 Control text generation with temperature and seeding
+- 📝 Generate multiple sentences with configurable probability
 
 ## Installation
-```bash
-npm install grimquill
-```
+> ~~npm install grimquill~~  
+
+Not available on NPM yet. Clone and install manually for now.
 
 ## Quick Start
 
@@ -61,6 +64,13 @@ async function generateText() {
   console.log(markov.generate({
     temperature: 0.8,
     seed: 'Your starting text'
+  }));
+
+  // Generate multiple sentences
+  console.log('\nGenerated text with multiple sentences:');
+  console.log(markov.generate({
+    temperature: 0.8,
+    multipleSentenceProbability: 0.5  // 50% chance to continue after each sentence
   }));
 }
 
@@ -137,6 +147,7 @@ await trainParallel();
 - `temperature` (number): Controls randomness (0 = deterministic, 1 = random, default: 0.8)
 - `stopProbability` (number): Probability of stopping at stop tokens (default: 0.7)
 - `seed` (string): Optional starting text for generation
+- `multipleSentenceProbability` (number): Probability to continue after a stop token (0-1, default: 0)
 
 ## Best Practices
 
@@ -156,11 +167,16 @@ await trainParallel();
    - Higher temperature (0.7-1.0) for more creative text
 2. Use seeding for more controlled generation
 3. Experiment with stopProbability to control text length
+4. Use multipleSentenceProbability to control paragraph length:
+   - Lower values (0.1-0.3) for shorter paragraphs
+   - Higher values (0.4-0.7) for longer paragraphs
+   - Values above 0.8 may result in very long text
 
 ## Known Issues
 - Large models may consume significant memory
 - Very high order models may overfit to training data
 - Parallel processing requires careful memory management
+- High multipleSentenceProbability values may lead to very long generated text
 
 ## License
 MIT

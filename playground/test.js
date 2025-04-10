@@ -4,8 +4,8 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const modelPath = 'models/Revelation-test-model.json';
-const datasetPath = 'dataset/Revelation_excerpts.txt';
+const modelPath = 'models/Pak-test-model.json';
+const datasetPath = 'dataset/Pak.txt';
 
 /**
  * Example training function
