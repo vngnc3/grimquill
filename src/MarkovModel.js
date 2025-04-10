@@ -96,7 +96,13 @@ export class MarkovModel {
       }
     }
     
-    return this.tokenizer.detokenize(tokens);
+    // Detokenize and capitalize first letter if it's a valid English letter
+    let text = this.tokenizer.detokenize(tokens);
+    if (/^[a-z]/.test(text)) {
+      text = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+    
+    return text;
   }
   
   /**
@@ -132,6 +138,10 @@ export class MarkovModel {
    * @param {string} filePath - Path to save the model
    */
   async save(filePath) {
+    // Ensure directory exists
+    const dir = path.dirname(filePath);
+    await fs.mkdir(dir, { recursive: true });
+    
     const serialized = {
       order: this.order,
       tokenType: this.tokenType,

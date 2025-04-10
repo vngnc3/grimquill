@@ -14,134 +14,115 @@ Configurable Higher-Order Markov Text Generator.
 npm install grimquill
 ```
 
-## Usage
+## Quick Start
 
-### Workflow 1: Training and Saving Models
-
-#### Basic Training
+### 1. Training a Model
 ```javascript
 import { MarkovModel } from 'grimquill';
 
-// Create a new model
-const markov = new MarkovModel({
-  order: 3,              // Markov chain order
-  tokenType: 'word',     // 'word' or 'char'
-  stopTokens: ['.', '!', '?']  // Tokens that can end generation
-});
+async function trainModel() {
+  // Create a new model
+  const markov = new MarkovModel({
+    order: 3,              // Markov chain order
+    tokenType: 'word',     // 'word' or 'char'
+    stopTokens: ['.', '!', '?']  // Tokens that can end generation
+  });
 
-// Train on a single text
-await markov.train('Your training text here');
+  // Train on your text
+  console.log('Training model...');
+  await markov.train('Your training text here');
 
-// Save the trained model
-await markov.save('path/to/model.json');
+  // Save the trained model
+  console.log('Training complete, saving model...');
+  await markov.save('path/to/model.json');
+  console.log('Model saved successfully');
+}
+
+// Run the training
+await trainModel();
 ```
 
-#### Training on Multiple Texts
+### 2. Generating Text
+```javascript
+import { MarkovModel } from 'grimquill';
+
+async function generateText() {
+  // Load a saved model
+  const markov = await MarkovModel.load('path/to/model.json');
+
+  // Generate text with different parameters
+  console.log('\nGenerated text (temperature: 0.5 - more predictable):');
+  console.log(markov.generate({ temperature: 0.5 }));
+
+  console.log('\nGenerated text (temperature: 0.8 - balanced):');
+  console.log(markov.generate({ temperature: 0.8 }));
+
+  console.log('\nGenerated text with seed:');
+  console.log(markov.generate({
+    temperature: 0.8,
+    seed: 'Your starting text'
+  }));
+}
+
+// Run the generation
+await generateText();
+```
+
+## Advanced Usage
+
+### Training on Multiple Texts
 ```javascript
 const texts = [
   'First text corpus...',
   'Second text corpus...'
 ];
 
-// Train on multiple texts
 await markov.train(texts);
-
-// Save the trained model
-await markov.save('path/to/model.json');
 ```
 
-#### Parallel Training for Large Datasets
+### Parallel Training for Large Datasets
 ```javascript
 import { MarkovModel } from 'grimquill';
 import workerpool from 'workerpool';
 
-// Create a pool of workers
-const pool = workerpool.pool('./worker.js');
+async function trainParallel() {
+  // Create a pool of workers
+  const pool = workerpool.pool('./worker.js');
 
-// Split large text into chunks
-const chunks = splitTextIntoChunks(largeText, numChunks);
+  // Split large text into chunks
+  const chunks = splitTextIntoChunks(largeText, numChunks);
 
-// Process chunks in parallel
-const results = await Promise.all(
-  chunks.map(chunk => pool.exec('processChunk', [{
-    chunk,
-    order: 3,
-    tokenType: 'word'
-  }]))
-);
+  // Process chunks in parallel
+  const results = await Promise.all(
+    chunks.map(chunk => pool.exec('processChunk', [{
+      chunk,
+      order: 3,
+      tokenType: 'word'
+    }]))
+  );
 
-// Create final model and merge results
-const markov = new MarkovModel({ order: 3 });
-results.forEach(result => {
-  result.forEach(([context, nextTokens]) => {
-    if (!markov.model.has(context)) {
-      markov.model.set(context, new Map());
-    }
-    nextTokens.forEach(([token, count]) => {
-      const currentCount = markov.model.get(context).get(token) || 0;
-      markov.model.get(context).set(token, currentCount + count);
+  // Create final model and merge results
+  const markov = new MarkovModel({ order: 3 });
+  results.forEach(result => {
+    result.forEach(([context, nextTokens]) => {
+      if (!markov.model.has(context)) {
+        markov.model.set(context, new Map());
+      }
+      nextTokens.forEach(([token, count]) => {
+        const currentCount = markov.model.get(context).get(token) || 0;
+        markov.model.get(context).set(token, currentCount + count);
+      });
     });
   });
-});
 
-// Save the merged model
-await markov.save('path/to/model.json');
+  // Save the merged model
+  await markov.save('path/to/model.json');
 
-// Clean up
-pool.terminate();
-```
+  // Clean up
+  pool.terminate();
+}
 
-### Workflow 2: Loading and Generating Text
-
-#### Basic Text Generation
-```javascript
-import { MarkovModel } from 'grimquill';
-
-// Load a saved model
-const markov = await MarkovModel.load('path/to/model.json');
-
-// Generate text
-const generated = markov.generate({
-  maxLength: 100,        // Maximum length of generated text
-  temperature: 0.8,      // Controls randomness (0-1)
-  stopProbability: 0.7   // Probability of stopping at stop tokens
-});
-
-console.log(generated);
-```
-
-#### Seeded Text Generation
-```javascript
-// Load a saved model
-const markov = await MarkovModel.load('path/to/model.json');
-
-// Generate text starting with specific words
-const seeded = markov.generate({
-  maxLength: 100,
-  temperature: 0.8,
-  stopProbability: 0.7,
-  seed: 'The quick brown'  // Start generation with these words
-});
-
-console.log(seeded);
-```
-
-#### Batch Text Generation
-```javascript
-// Load a saved model
-const markov = await MarkovModel.load('path/to/model.json');
-
-// Generate multiple texts with different parameters
-const texts = [
-  markov.generate({ temperature: 0.5 }),  // More predictable
-  markov.generate({ temperature: 0.8 }),  // Balanced
-  markov.generate({ temperature: 1.0 })   // More creative
-];
-
-texts.forEach((text, i) => {
-  console.log(`\nGenerated text ${i + 1}:`);
-  console.log(text);
-});
+await trainParallel();
 ```
 
 ## Configuration Options
