@@ -4,7 +4,8 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const modelPath = 'models/Pak-fourthOrder-test-model.json';
+const modelPath = 'models/Revelation-test-model.json';
+const datasetPath = 'dataset/Revelation_excerpts.txt';
 
 /**
  * Example training function
@@ -18,7 +19,7 @@ async function trainModel() {
   });
 
   // Import txt file for training
-  const trainingData = await fs.readFile(path.join(__dirname, 'dataset/Pak.txt'), 'utf8');
+  const trainingData = await fs.readFile(path.join(__dirname, datasetPath), 'utf8');
 
   // Train the model
   console.log('Training model...');
@@ -40,7 +41,8 @@ async function generateText() {
   const generatedText = markov.generate({
     maxLength: 100,
     temperature: 0.8,
-    stopProbability: 0.69
+    stopProbability: 0.69,
+    multipleSentenceProbability: 0.89
   });
 
   console.log(generatedText);
