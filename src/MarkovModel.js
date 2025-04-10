@@ -47,6 +47,89 @@ export class MarkovModel {
   }
   
   /**
+   * Clean up and format generated text
+   * @private
+   */
+  _formatGeneratedText(text) {
+    // Find the first valid starting character (letter, quote, or number)
+    const firstValidChar = text.search(/[a-zA-Z0-9"]/);
+    if (firstValidChar > 0) {
+      text = text.slice(firstValidChar);
+    }
+
+    // Capitalize first letter if it's a valid English letter
+    if (/^[a-z]/.test(text)) {
+      text = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    // Count quotes to identify invalid pairs
+    const quoteCount = (text.match(/"/g) || []).length;
+    if (quoteCount % 2 !== 0) {
+      // If odd number of quotes, remove all quotes and their surrounding spaces
+      text = text
+        .replace(/\s*"\s*/g, '')  // Remove quotes and their surrounding spaces
+        .replace(/\s+/g, ' ')     // Clean up any resulting double spaces
+        .trim();
+    } else {
+      // First, handle nested quotes
+      text = text
+        // Remove spaces inside nested quotes
+        .replace(/"\s*([^"]*)"\s*([^"]*)"\s*([^"]*)"/g, '"$1"$2"$3"')
+        .replace(/"\s*([^"]*)"\s*([^"]*)"/g, '"$1"$2"');
+
+      // Then handle all quote pairs
+      let quotePairs = text.match(/"[^"]*"/g) || [];
+      for (const pair of quotePairs) {
+        const cleanPair = pair
+          .replace(/"\s+/g, '"')  // Remove spaces after opening quote
+          .replace(/\s+"/g, '"'); // Remove spaces before closing quote
+        
+        // Replace the original pair with the cleaned version
+        text = text.replace(pair, cleanPair);
+      }
+
+      // Now handle spacing around quotes
+      text = text
+        // Add space before opening quotes (except after opening parenthesis, bracket, or at start of text)
+        .replace(/([^(\[\s])"/g, '$1 "')
+        
+        // Add space after closing quotes (except before punctuation or at end of text)
+        .replace(/"([^.,!?)\]\s])/g, '" $1')
+        
+        // Move punctuation inside quotes (except for parentheses and brackets)
+        .replace(/([.,!?])"/g, '"$1')
+        
+        // Handle multiple consecutive punctuation marks
+        .replace(/([.!?])\s*([.!?])/g, '$1$2')
+        .replace(/([.!?])\s*([.!?])/g, '$1$2') // Run twice to catch overlapping patterns
+        
+        // Handle special cases for punctuation
+        .replace(/\s*,\s*/g, ', ')
+        .replace(/\s*;\s*/g, '; ')
+        .replace(/\s*:\s*/g, ': ')
+        
+        // Handle parentheses and brackets
+        .replace(/\s*\(\s*/g, ' (')
+        .replace(/\s*\)\s*/g, ') ')
+        .replace(/\s*\[\s*/g, ' [')
+        .replace(/\s*\]\s*/g, '] ')
+        
+        // Clean up any remaining spacing issues
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([.,!?])\s*/g, '$1 ')
+        .trim();
+    }
+
+    // Final check for proper sentence endings
+    if (!/[.!?]$/.test(text)) {
+      // If text doesn't end with proper punctuation, add a period
+      text = text.replace(/\s*$/, '.');
+    }
+
+    return text;
+  }
+  
+  /**
    * Generate text from the trained model
    * @param {Object} options - Generation options
    * @param {number} options.maxLength - Maximum length of generated text
@@ -117,11 +200,9 @@ export class MarkovModel {
       }
     }
     
-    // Detokenize and capitalize first letter if it's a valid English letter
+    // Detokenize and format the text
     let text = this.tokenizer.detokenize(tokens);
-    if (/^[a-z]/.test(text)) {
-      text = text.charAt(0).toUpperCase() + text.slice(1);
-    }
+    text = this._formatGeneratedText(text);
     
     return text;
   }
