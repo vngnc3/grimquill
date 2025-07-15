@@ -9,18 +9,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE_UPDATE_INTERVAL = 1300; // base milliseconds between updates
 const WORD_INTERVAL_BONUS = 150; // additional milliseconds per word
 const MODEL_PATH = path.join(__dirname, 'models', 'Pak-synthetic-0411.json');
-const MIN_WORD_DELAY = 10; // minimum milliseconds between words
-const MAX_WORD_DELAY = 60; // maximum milliseconds between words
+const MIN_WORD_DELAY = 50; // minimum milliseconds between words
+const MAX_WORD_DELAY = 200; // maximum milliseconds between words
 
 // Generation parameter ranges
 const BOTTOM_MAX_LENGTH = 90;
-const TOP_MAX_LENGTH = 200;
-const BOTTOM_TEMP = 0.5;
-const TOP_TEMP = 0.95;
+const TOP_MAX_LENGTH = 100;
+const BOTTOM_TEMP = 0.1;
+const TOP_TEMP = 0.6;
 const BOTTOM_STOP_PROB = 0.2;
 const TOP_STOP_PROB = 0.7;
 const BOTTOM_SENTENCE_PROB = 0.4;
-const TOP_SENTENCE_PROB = 0.9;
+const TOP_SENTENCE_PROB = 0.7;
 
 // Helper function to get random value within range
 function getRandomInRange(min, max) {
