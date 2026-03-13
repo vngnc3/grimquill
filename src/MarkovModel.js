@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Higher-order Markov chain model for text generation
@@ -211,12 +211,12 @@ export class MarkovModel {
    * Select next token based on weights and temperature
    * @private
    */
-  _selectNextToken(nextTokens, temperature) {
-    const entries = Array.from(nextTokens.entries());
-    const total = entries.reduce((sum, [_, count]) => sum + count, 0);
+  _selectNextToken(nextTokensMap, temperature) {
+    const entries = Array.from(nextTokensMap.entries());
+    const total = entries.reduce((sum, [, count]) => sum + count, 0);
     
     // Apply temperature to control randomness
-    const weights = entries.map(([_, count]) => 
+    const weights = entries.map(([, count]) => 
       Math.pow(count / total, 1 / temperature)
     );
     const weightTotal = weights.reduce((sum, w) => sum + w, 0);
