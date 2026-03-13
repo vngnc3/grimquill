@@ -5,6 +5,12 @@
 Configurable Higher-Order Markov Text Generator.
 
 ## What does Grimquill do?
+- 🧠 higher-order markov models (word/char/sentence tokenize)
+- 🔮 gen w/ temp/top-p/nucleus, smoothing anti-overfit, multisent
+- 🚅 parallel train (workerpool)
+- 🧪 tests + pak/cyberpunk corpora
+- 💻 express webdemo (playground/webdemo.js)
+- 📊 metrics/perplexity
 - 🧠 Create and train higher-order Markov chain models
 - 🔮 Generate text from the trained Markov chain models
 - 🚅 Support parallel processing for faster training
@@ -13,11 +19,19 @@ Configurable Higher-Order Markov Text Generator.
 - 📝 Generate multiple sentences with configurable probability
 
 ## Installation
-> ~~npm install grimquill~~  
-
-Not available on NPM yet. Clone and install manually for now.
+npm i grimquill # soon
+clone: git clone https://github.com/vngnc3/grimquill.git && cd grimquill && npm i
 
 ## Quick Start
+
+### CLI
+```
+grimquill train corpus.txt --order 3 --tokenType word --out model.json
+grimquill generate model.json --temp 0.8 --seed "start" --multipleSentenceProbability 0.4
+```
+global: npm i -g .
+
+### Lib
 
 ### 1. Training a Model
 ```javascript
